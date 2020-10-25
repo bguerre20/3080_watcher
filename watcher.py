@@ -1,7 +1,39 @@
+import os
 import requests
 import json
+import warnings
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+#load into our OS environment variables the entries declared in the file called .env in the same folder as this .py file
+load_dotenv()
+
+#Get our environment variables from our .env file
+bbyKey = os.getenv('WATCHER_BBY_KEY')
+twilioKey = os.getenv('WATCHER_TWILIO_KEY')
+phoneNum = os.getenv('WATCHER_PHONE_NUMBER')
+emailAddress = os.getenv('WATCHER_EMAIL_ADDRESS')
+
+if bbyKey:
+    print('bbyKey: ' + bbyKey)
+else:
+    print('!!!WATCHER_BBY_KEY not specified in .env BBY will be unavailable.')
+
+if twilioKey:
+    print('twilioKey: ' + twilioKey)
+else:
+    print('!!!WATCHER_TWILIO_KEY not specified in .env text alerts will be unavailable.')
+
+if phoneNum:
+    print('phoneNum: ' + phoneNum)
+else:
+    print('!!!WATCHER_PHONE_NUMBER not specified in .env text alerts will be unavailable.')
+
+if emailAddress:
+    print('emailAddress: ' + emailAddress)
+else:
+    print('!!!WATCHER_EMAIL_ADDRESS not specified in .env email alerts will be unavailable.')
 
 print("---Newegg---")
 newEggURL = 'https://www.newegg.com/p/pl?N=100007709%20601357282&RandomID=32283675217917420201001091350&Order=6'
@@ -27,32 +59,32 @@ if inStockCount > 0:
         print(inStockItem)
 
 
+if bbyKey:
+    print("---Best Buy---")
+    bb3080Skus = '6429440,6436219,6430620,6436191,6436223,6436196,6432399,6436194,6432400,6430175,6432445,6430621,6432655,6436195,6432658'
+    response = requests.get('https://api.bestbuy.com/v1/products(sku in('+ bb3080Skus +'))?apiKey=' + bbyKey)
+    #f = open("best_buy_response.xml", "w")
+    #f.write(response.text)
+    #f.close()
 
-print("---Best Buy---")
-bb3080Skus = '6429440,6436219,6430620,6436191,6436223,6436196,6432399,6436194,6432400,6430175,6432445,6430621,6432655,6436195,6432658'
-response = requests.get('https://api.bestbuy.com/v1/products(sku in('+ bb3080Skus +'))?apiKey=Wh3PNjt4RqlHzxw90K1oF5mT')
-#f = open("best_buy_response.xml", "w")
-#f.write(response.text)
-#f.close()
 
+    root = ET.fromstring(response.text)
+    bestBuyInStockCount = 0
+    bestBuyOutOfStockCount = 0
+    bestBuyInStockItems = []
+    for child in root:
+        onlineAvailability = child.find('onlineAvailability').text
+        cardName = child.find('name').text
+        url = child.find('url').text
+        if onlineAvailability == "false":
+            bestBuyOutOfStockCount += 1
+            bestBuyInStockItems.append(cardName + " | " + url)
+        elif onlineAvailability == "true":
+            bestBuyInStockCount += 1
+            bestBuyInStockItems.append(cardName + " | " + url)
+    if bestBuyInStockCount > 0:
+        for bestBuyItem in bestBuyInStockItems:
+            print(bestBuyItem)
 
-root = ET.fromstring(response.text)
-bestBuyInStockCount = 0
-bestBuyOutOfStockCount = 0
-bestBuyInStockItems = []
-for child in root:
-    onlineAvailability = child.find('onlineAvailability').text
-    cardName = child.find('name').text
-    url = child.find('url').text
-    if onlineAvailability == "false":
-        bestBuyOutOfStockCount += 1
-        bestBuyInStockItems.append(cardName + " | " + url)
-    elif onlineAvailability == "true":
-        bestBuyInStockCount += 1
-        bestBuyInStockItems.append(cardName + " | " + url)
-if bestBuyInStockCount > 0:
-    for bestBuyItem in bestBuyInStockItems:
-        print(bestBuyItem)
-
-print("Out of Stock: ", bestBuyOutOfStockCount)
-print("In Stock: ", bestBuyInStockCount)
+    print("Out of Stock: ", bestBuyOutOfStockCount)
+    print("In Stock: ", bestBuyInStockCount)
