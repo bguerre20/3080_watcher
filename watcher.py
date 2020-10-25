@@ -1,34 +1,50 @@
-import os
+
 import requests
 import json
 import warnings
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
+import os
 from dotenv import load_dotenv
+from twilio.rest import Client
 
 #load into our OS environment variables the entries declared in the file called .env in the same folder as this .py file
 load_dotenv()
 
 #Get our environment variables from our .env file
-bbyKey = os.getenv('WATCHER_BBY_KEY')
-twilioKey = os.getenv('WATCHER_TWILIO_KEY')
+bbyKey = os.getenv("WATCHER_BBY_KEY")
+print(bbyKey)
+twilioAccountSID = os.getenv('WATCHER_TWILIO_ACCOUNT_SID')
+twilioAuthToken = os.getenv("WATCHER_TWILIO_AUTH_TOKEN")
 phoneNum = os.getenv('WATCHER_PHONE_NUMBER')
+fromNum = os.getenv('WATCHER_TWILIO_FROM_NUMBER')
 emailAddress = os.getenv('WATCHER_EMAIL_ADDRESS')
+
 
 if bbyKey:
     print('bbyKey: ' + bbyKey)
 else:
     print('!!!WATCHER_BBY_KEY not specified in .env BBY will be unavailable.')
 
-if twilioKey:
-    print('twilioKey: ' + twilioKey)
+if twilioAccountSID:
+    print('twilioAccountSID: ' + twilioAccountSID)
 else:
-    print('!!!WATCHER_TWILIO_KEY not specified in .env text alerts will be unavailable.')
+    print('!!!WATCHER_TWILIO_ACCOUNT_SID not specified in .env text alerts will be unavailable.')
+
+if twilioAuthToken:
+    print('twilioAuthToken: ' + twilioAuthToken)
+else:
+    print('!!!WATCHER_TWILIO_AUTH_TOKEN not specified in .env text alerts will be unavailable.')
 
 if phoneNum:
     print('phoneNum: ' + phoneNum)
 else:
     print('!!!WATCHER_PHONE_NUMBER not specified in .env text alerts will be unavailable.')
+
+if fromNum:
+    print('fromNum: ' + fromNum)
+else:
+    print('!!!WATCHER_TWILIO_FROM_NUMBER not specified in .env text alerts will be unavailable.')
 
 if emailAddress:
     print('emailAddress: ' + emailAddress)
@@ -88,3 +104,13 @@ if bbyKey:
 
     print("Out of Stock: ", bestBuyOutOfStockCount)
     print("In Stock: ", bestBuyInStockCount)
+
+
+client = Client(twilioAccountSID, twilioAuthToken)
+message = client.messages \
+                .create(
+                     body="Hello World!",
+                     from_=str(fromNum),
+                     to=str(phoneNum)
+                 )
+print(message.sid)
