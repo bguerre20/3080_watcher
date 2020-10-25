@@ -94,7 +94,6 @@ if bbyKey:
         url = child.find('url').text
         if onlineAvailability == "false":
             bestBuyOutOfStockCount += 1
-            bestBuyInStockItems.append(cardName + " | " + url)
         elif onlineAvailability == "true":
             bestBuyInStockCount += 1
             bestBuyInStockItems.append(cardName + " | " + url)
@@ -105,12 +104,23 @@ if bbyKey:
     print("Out of Stock: ", bestBuyOutOfStockCount)
     print("In Stock: ", bestBuyInStockCount)
 
-
-client = Client(twilioAccountSID, twilioAuthToken)
-message = client.messages \
-                .create(
-                     body="Hello World!",
-                     from_=str(fromNum),
-                     to=str(phoneNum)
-                 )
-print(message.sid)
+if inStockCount > 0:
+    for newEggInStockItem in inStockItems:
+        client = Client(twilioAccountSID, twilioAuthToken)
+        message = client.messages \
+                        .create(
+                            body="NewEgg 3080 in stock!" + newEggInStockItem,
+                            from_=str(fromNum),
+                            to=str(phoneNum)
+                        )
+        print(message.sid)
+if bestBuyInStockCount > 0:
+    for bestBuyInStockItem in bestBuyInStockItems:
+        client = Client(twilioAccountSID, twilioAuthToken)
+        message = client.messages \
+                        .create(
+                            body="BestBuy 3080 in stock!" + bestBuyInStockItem,
+                            from_=str(fromNum),
+                            to=str(phoneNum)
+                        )
+        print(message.sid)
