@@ -13,7 +13,7 @@ inStockCount = 0
 inStockItems = []
 for itemContainer in itemContainers:
     itemPromo = itemContainer.find('p',class_='item-promo')
-    if itemPromo.text == 'OUT OF STOCK':
+    if itemPromo.texpyt == 'OUT OF STOCK':
         outOfStockCount += 1
     else:
         inStockCount += 1
@@ -56,3 +56,4 @@ if bestBuyInStockCount > 0:
 
 print("Out of Stock: ", bestBuyOutOfStockCount)
 print("In Stock: ", bestBuyInStockCount)
+print("Nate was here.")
