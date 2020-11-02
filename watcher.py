@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
 from twilio.rest import Client
+import time
 
 #load into our OS environment variables the entries declared in the file called .env in the same folder as this .py file
 load_dotenv()
@@ -77,32 +78,52 @@ if inStockCount > 0:
 
 if bbyKey:
     print("---Best Buy---")
-    bb3080Skus = '6429440,6436219,6430620,6436191,6436223,6436196,6432399,6436194,6432400,6430175,6432445,6430621,6432655,6436195,6432658'
-    response = requests.get('https://api.bestbuy.com/v1/products(sku in('+ bb3080Skus +'))?apiKey=' + bbyKey)
-    #f = open("best_buy_response.xml", "w")
-    #f.write(response.text)
-    #f.close()
-
-
-    root = ET.fromstring(response.text)
+    bb3080Skus = '6429440,6436219,6430620,6436191,6436223,6436196,6432399,6436194,6432400,6430175'
+    bbsku2 = '6432445,6430621,6432655,6436195,6432658,6429442,6437912,6439300,6437909,6429434'
+    bb3080skus1 = '6429440,6430621,6432399,6430175,6430620,6432655,6436194,6432658,6432400,6436195'
+    bb3080sku2 = '6436219,6436191,6436196,6436223,6432445'
+    bb3070sku1 = '6429442,6437912,6439300,6432654,6432653,6437909'
+    #bb3070sku2 = ''
+    bb3090sku1 = '6429434,6434363,6430624,6430215,6430623,6432656,6432657,6432446,6437910,6436193'
+    bb3090sku2 = '6436192,6432447'
+    bbAllSku = ["6429440","6436219","6430620","6436191","6436223","6436196","6432399","6436194","6432400","6430175" ,"6432445","6430621","6432655","6436195","6432658","6429442","6437912","6439300","6437909","6429434","6429440","6430621","6432399","6430175","6430620","6432655","6436194","6432658","6432400","6436195","6436219","6436191","6436196","6436223","6432445","6429434","6434363","6430624","6430215","6430623","6432656","6432657","6432446","6437910","6436193","6436192","6432447"]
+    
+    skuString = ""
+    skuCount = 0
+    
+    count = 0
     bestBuyInStockCount = 0
     bestBuyOutOfStockCount = 0
     bestBuyInStockItems = []
-    for child in root:
-        onlineAvailability = child.find('onlineAvailability').text
-        cardName = child.find('name').text
-        url = child.find('url').text
-        if onlineAvailability == "false":
-            bestBuyOutOfStockCount += 1
-        elif onlineAvailability == "true":
-            bestBuyInStockCount += 1
-            bestBuyInStockItems.append(cardName + " | " + url)
-    if bestBuyInStockCount > 0:
-        for bestBuyItem in bestBuyInStockItems:
-            print(bestBuyItem)
 
+    for sku in bbAllSku:
+        skuString = skuString + sku + ","
+        skuCount = skuCount + 1
+        if skuCount % 10 == 0 or skuCount == len(bbAllSku):
+            skuString = skuString[:-1]
+            print(skuString)
+            response = requests.get('https://api.bestbuy.com/v1/products(sku in('+ skuString +'))?apiKey=' + bbyKey)
+            root = ET.fromstring(response.text)
+            for child in root:
+                onlineAvailability = child.find('onlineAvailability').text
+                cardName = child.find('name').text
+                url = child.find('url').text
+                count += 1
+                if onlineAvailability == "false":
+                    bestBuyOutOfStockCount += 1
+                elif onlineAvailability == "true":
+                    bestBuyInStockCount += 1
+                    bestBuyInStockItems.append(cardName + " | " + url)
+            skuString = ''
+            time.sleep(1)
+
+    print(count)
+ 
     print("Out of Stock: ", bestBuyOutOfStockCount)
     print("In Stock: ", bestBuyInStockCount)
+    if bestBuyInStockCount > 0:
+        for bestBuyItem in bestBuyInStockItems:
+            print(bestBuyItem)   
 
 if inStockCount > 0:
     for newEggInStockItem in inStockItems:
